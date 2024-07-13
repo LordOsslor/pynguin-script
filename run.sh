@@ -20,7 +20,7 @@ reset() {
     rm -r .venv downloaded extracted pynguin-prison modulenames.txt
     if [ "$1" = "--full" ]; then
         echo "Also removing all output files and directories"
-        rm -r logging output done.txt
+        rm -r logging output done.txt errors.txt
     fi
 }
 
@@ -46,15 +46,21 @@ install() {
 
     $PY_PATH iter_modules.py ./extracted/ 1 > ./modulenames.txt
 
+    touch done.txt
+    touch errors.txt
+
     echo "Setup done"
 }
 
 run_module() {
     if grep -q $module ../done.txt; then
         echo "Skipping module $module as it has already been marked as done"
+    elif grep -q $module ../errors.txt; then
+      echo "Skipping module $module as it has already benn marked as erroneous"
     else
         echo "Running module $module..."
-        pynguin --population 50                             \
+        pynguin --no-rich                                   \
+            --population 50                                 \
             --initial-config.number-of-tests-per-target 10  \
             --initial_config.number_of_mutations 1          \
             --focused-config.number-of-tests-per-target 1   \
@@ -66,16 +72,16 @@ run_module() {
             --project-path ../extracted/                    \
             --output-path ../output/${module}               \
             --module-name ${module}
+
         if [ $? -eq 0 ]; then
             echo "Module $module successfully completed; Marking as done"
             echo $module >> ../done.txt
         else
             echo "ERROR while running Module $module!"
+            echo $module >> ../errors.txt
         fi
     fi
 }
-
-
 
 run() {
     source .venv/bin/activate

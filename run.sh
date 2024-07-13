@@ -59,7 +59,7 @@ run_module() {
             --module-name ${module}
         if [ $? -eq 0 ]; then
             echo "Module $module successfully completed; Marking as done"
-            echo $module >> done.txt
+            echo $module >> ../done.txt
         else
             echo "ERROR while running Module $module!"
         fi

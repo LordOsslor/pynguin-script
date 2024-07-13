@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z ${PY_PATH+x} ]; then
+    PY_PATH="python3.10"
+fi
+
+
 usage() { 
     echo "Usage:$0 <command>"
     echo
@@ -26,20 +31,20 @@ fix_debug() {
 }
 
 install() {
-    python3.10 -m venv .venv
+    $PY_PATH -m venv .venv
     source .venv/bin/activate
 
-    python -m pip install pynguin wheel
-    python -m pip install -r requirements.txt
+    $PY_PATH -m pip install pynguin wheel
+    $PY_PATH -m pip install -r requirements.txt
 
-    python -m pip download --no-deps -r requirements.txt -d downloaded
+    $PY_PATH -m pip download --no-deps -r requirements.txt -d downloaded
 
     for f in ./downloaded/*
     do
         unzip $f -x "*[0-9].[0-9]*" -fo -d ./extracted/
     done
 
-    python iter_modules.py ./extracted/ 1 > ./modulenames.txt
+    $PY_PATH iter_modules.py ./extracted/ 1 > ./modulenames.txt
 
     echo "Setup done"
 }

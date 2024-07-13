@@ -6,4 +6,6 @@ pynguin-prison
 output
 
 done.txt
+errors.txt
+log.txt
 modulenames.txt

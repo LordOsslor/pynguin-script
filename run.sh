@@ -71,13 +71,13 @@ run_module() {
             --maximum_coverage 100                          \
             --project-path ../extracted/                    \
             --output-path ../output/${module}               \
-            --module-name ${module}
+            --module-name ${module} | tee -ap "../logging/${module}.log"
 
         if [ $? -eq 0 ]; then
             echo "Module $module successfully completed; Marking as done"
             echo $module >> ../done.txt
         else
-            echo "ERROR while running Module $module!"
+            echo "ERROR while running Module $module!; Marking as error"
             echo $module >> ../errors.txt
         fi
     fi
@@ -93,7 +93,7 @@ run() {
 
     while IFS= read -r module
     do
-        run_module $module | tee -ap "../logging/${module}.log"
+        run_module $module
     done < "../modulenames.txt"
 }
 

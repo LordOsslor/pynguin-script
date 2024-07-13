@@ -97,7 +97,7 @@ case "$1" in
         ;;
     "run")
         echo "Running pynguin..."
-        reset
+        run
         ;;
     "yolo")
         echo "DOING EVERYTHING"

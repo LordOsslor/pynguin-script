@@ -50,7 +50,7 @@ install() {
 }
 
 run_module() {
-    if grep -q $module done.txt; then
+    if grep -q $module ../done.txt; then
         echo "Skipping module $module as it has already been marked as done"
     else
         echo "Running module $module..."

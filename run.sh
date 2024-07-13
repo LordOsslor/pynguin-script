@@ -12,7 +12,11 @@ usage() {
 }
 
 reset() {
-    rm -r .venv downloaded extracted pynguin-prison modulenames.txt done.txt
+    rm -r .venv downloaded extracted pynguin-prison modulenames.txt
+    if [ "$1" = "--full" ]; then
+        echo "Also removing all output files and directories"
+        rm -r logging output done.txt
+    fi
 }
 
 fix_debug() {
@@ -89,7 +93,7 @@ case "$1" in
         ;;
     "reset")
         echo "Resetting..."
-        reset
+        reset $2
         ;;
     "fix-dbg")
         echo "Fixing Debug printing..."
@@ -101,10 +105,10 @@ case "$1" in
         ;;
     "yolo")
         echo "DOING EVERYTHING"
-        reset
+        reset $2
         install
         fix_debug
-        run
+        PYNGUIN_DANGER_AWARE=1 run
         ;;
     *)
         usage

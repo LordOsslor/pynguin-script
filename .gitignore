@@ -1,11 +1,5 @@
-.venv
-downloaded
-extracted
-logging
-pynguin-prison
-output
+out
 
 done.txt
 errors.txt
-log.txt
 modulenames.txt

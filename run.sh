@@ -55,4 +55,8 @@ run() {
 }
 
 $DOCKER_EXE build -t pynguin .
+
+touch ./done.txt
+touch ./errors.txt
+
 run

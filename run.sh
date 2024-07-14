@@ -1,3 +1,5 @@
+DOCKER_EXE=podman
+
 run_module() {
   module=$1
   mkdir -p out/$module/
@@ -8,7 +10,7 @@ run_module() {
     echo "Skipping module $module as it has already benn marked as erroneous"
   else
     echo "Running module $module"
-    timeout -k 2 1500 podman run --name $module --mount type=bind,source=./out/$module/,target=/bind/ pynguin $module
+    timeout -k 2 1500 $DOCKER_EXE run --name $module --mount type=bind,source=./out/$module/,target=/bind/ pynguin $module
 
     status=$?
 
@@ -19,7 +21,7 @@ run_module() {
       echo $module >>./done.txt
     elif [ $status -ge 124 ]; then
       echo "Module $module timed out; Killing container and marking as error"
-      podman kill $module
+      $DOCKER_EXE kill $module
       echo $module >>./errors.txt
     else
       echo "ERROR while running module $module: Exit code=$status; Marking as error"
@@ -34,5 +36,5 @@ run() {
   done <"./modulenames.txt"
 }
 
-podman build -t pynguin .
+$DOCKER_EXE build -t pynguin .
 run

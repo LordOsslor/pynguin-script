@@ -69,7 +69,7 @@ get_containers() {
 run() {
   while IFS= read -r module; do
     if (("$(get_containers)" >= "$MAX_PARALLEL")); then
-      echo "Current thread count: $(pgrep -c -P$$); Waiting for threads to finish"
+      echo "Current container count:  $(get_containers); Our containers: $(pgrep -c -P$$); Waiting for threads to finish"
     fi
     while (("$(get_containers)" >= "$MAX_PARALLEL")); do
       progress $search_time

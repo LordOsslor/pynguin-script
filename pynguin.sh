@@ -2,6 +2,12 @@
 
 BIND_PATH="/bind/"
 
+if [[ $# -ge 2 ]]; then
+  search_time=$2
+else
+  search_time=600
+fi
+
 mkdir -p prison
 cd prison
 
@@ -15,7 +21,7 @@ pynguin --no-rich \
         --focused-config.number-of-mutations 10 \
         --crossover-rate 0.75 \
         --tournament_size 5 \
-        --maximum-search-time 600 \
+        --maximum-search-time ${2} \
         --maximum_coverage 100 \
         --project-path ../extracted/ \
         --output-path ../output \

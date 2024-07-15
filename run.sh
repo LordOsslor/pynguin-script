@@ -47,19 +47,21 @@ progress() {
   search_time=$1
   done=$(cat ./state/$search_time/done.txt | wc -l)
   error=$(cat ./state/$search_time/errors.txt | wc -l)
+  exclude=$(cat ./exclude.txt | wc -l)
 
   sum=$(($done + $error))
 
   total=$(cat ./modulenames.txt | wc -l)
+  real_total=$(($total - $exclude))
 
-  rel=$(echo "$sum/$total*100" | bc -l)
+  rel=$(echo "$sum/$real_total*100" | bc -l)
   perc=$(printf %.2f $rel)
 
   elapsed=$SECONDS
   rate=$(echo $sum.0001/$elapsed | bc -l)
-  eta=$(TZ=UTC0 printf '%(%H:%M:%S)T' $(printf %.0f $(echo "($total-$sum)/$rate" | bc -l)))
+  eta=$(TZ=UTC0 printf '%(%H:%M:%S)T' $(printf %.0f $(echo "($real_total-$sum)/$rate" | bc -l)))
 
-  echo "[$(TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed)] (T=$search_time): (done: $done + error: $error) => $sum / $total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
+  echo "[$(TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed)] (T=$search_time): (done: $done + error: $error) => $sum / $real_total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
 }
 
 get_containers() {
@@ -76,7 +78,9 @@ run() {
       sleep 1
     done
 
-    if grep -q $module ./state/$search_time/done.txt; then
+    if grep -q $module ./exclude.txt; then
+      echo "Skipping module $module as it is excluded"
+    elif grep -q $module ./state/$search_time/done.txt; then
       echo "Skipping module $module as it has already been marked as done"
     elif grep -q $module ./state/$search_time/errors.txt; then
       echo "Skipping module $module as it has already benn marked as erroneous"

@@ -91,6 +91,16 @@ run() {
   done <"./modulenames.txt"
 }
 
+post_run() {
+  while (("$(pgrep -c -g $1)" > 1)); do
+    progress $search_time
+    sleep 1
+  done
+
+  progress $search_time
+  cat ./out/$search_time/*/statistics.csv | awk '!seen[$0]++' >out/$search_time/total_stats.csv
+}
+
 $DOCKER_EXE build -t pynguin .
 
 mkdir -p ./out/$search_time/
@@ -101,4 +111,8 @@ touch ./state/$search_time/errors.txt
 
 run
 
-cat ./out/$search_time/*/statistics.csv | awk '!seen[$0]++' >out/$search_time/total_stats.csv
+gid=$(ps -o '%r' $$ | sed "s/[^0-9\n]//g")
+# Allow program to exit and signal that it's done but it can still do some cleanup after everything
+post_run $gid &
+
+echo "All modules have been started; exiting main script"

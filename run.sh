@@ -17,7 +17,7 @@ run_module() {
   echo "Running module $module"
   timeout -k 10 2000 \
     $DOCKER_EXE run \
-    --name $module \
+    --name $search_time.$module \
     --replace \
     --cpus 1.0 \
     --mount type=bind,source=./out/$search_time/$module/,target=/bind/ \
@@ -34,7 +34,7 @@ run_module() {
     echo $module >>./state/$search_time/done.txt
   elif [ $status -ge 124 ]; then
     echo "Module $module timed out; Killing container and marking as error"
-    $DOCKER_EXE kill $module
+    $DOCKER_EXE kill $search_time.$module
     echo $module >>./state/$search_time/errors.txt
   else
     echo "ERROR while running module $module: Exit code=$status; Marking as error"
@@ -62,12 +62,16 @@ progress() {
   echo "[$(TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed)] (T=$search_time): (done: $done + error: $error) => $sum / $total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
 }
 
+get_containers() {
+  podman ps --noheading | wc -l
+}
+
 run() {
   while IFS= read -r module; do
-    if (("$(pgrep -c -P$$)" >= "$MAX_PARALLEL")); then
+    if (("$(get_containers)" >= "$MAX_PARALLEL")); then
       echo "Current thread count: $(pgrep -c -P$$); Waiting for threads to finish"
     fi
-    while (("$(pgrep -c -P$$)" >= "$MAX_PARALLEL")); do
+    while (("$(get_containers)" >= "$MAX_PARALLEL")); do
       progress $search_time
       sleep 1
     done

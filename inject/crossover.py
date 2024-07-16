@@ -266,8 +266,6 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                             arg1 = list(statement1.args.values())[rand_arg]
                             
                             if str(arg1._type) == str(arg2._type):
-                                with open(r"I:\Studium\HU\SE2\output\new_output\log.txt", "a") as file:
-                                    file.write(f"hit\n")
                                 changed = True
                         
                         if not changed:

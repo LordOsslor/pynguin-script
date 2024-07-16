@@ -3,8 +3,14 @@
 if [[ $# -ge 1 ]]; then
     START=$1
 else
-    START=1
+    if [[ -f ./config/last_run.txt ]]; then
+        START=$(($(cat ./config/last_run.txt) + 1))
+    else
+        START=1
+    fi
 fi
+
+echo $START >./config/last_run.txt
 
 if [[ $# -ge 2 ]]; then
     TIMES=$2

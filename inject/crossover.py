@@ -117,10 +117,8 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                         constructors_to_fill[str(statement)].add(statement)
                     
                 elif isinstance(statement, PrimitiveStatement) and not isinstance(statement, NoneStatement):      # NoneStatements are PrimitiveStatements
-                    
-                    if not str(statement.ret_val) in attributes_to_fill:
-                        attributes_to_fill[str(statement.ret_val)] = set()
-                    attributes_to_fill[str(statement.ret_val)].add(statement)
+                   
+                    attributes_to_fill[statement.ret_val] = statement
                 
             return methods_to_fill, constructors_to_fill, attributes_to_fill
            
@@ -156,11 +154,11 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                       self.cross_over(parent_1.get_test_case_chromosome(i), parent_2.get_test_case_chromosome(i))
         
          
-        """Creating the dictionaries to store the methods, constructors and attributes of the parent chromosomes"""
+            """Creating the dictionaries to store the methods, constructors and attributes of the parent chromosomes"""
+        else:
+            methods1, constructors1, attributes1 = fill_dicts(parent_1)
         
-        methods1, constructors1, attributes1 = fill_dicts(parent_1)
-        
-        methods2, constructors2, attributes2 = fill_dicts(parent_2, methods1, constructors1, False)   
+            methods2, constructors2, attributes2 = fill_dicts(parent_2, methods1, constructors1, False)   
         
                      
         
@@ -254,16 +252,34 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                 if arg2 is not None:
                 
                     if arg2.is_primitive():
-                    
-                        arg2 = str(arg2)
-                        arg1 = arg2
-                    
                         
-                        if (str(arg1) in attributes1 and len(attributes1[arg1]) != 0) and (str(arg2) in attributes2 and len(attributes2[arg2]) != 0):
+                        rand1 = randomness.next_int(0, len(function1[signature]))
+                        statement1 = list(function1[signature])[rand1]
                         
-                            rand1 = randomness.next_int(0, len(attributes1[arg1]))
-                            rand2 = randomness.next_int(0, len(attributes2[arg2]))
-                            val1, val2 = list(attributes1[arg1])[rand1].value, list(attributes2[arg2])[rand2].value      # Get the value of the attribute
+                        arg1 = None
+                        changed = False
+                        counter = 0
+                        
+                        while(not changed and counter < 10):
+                            counter += 1
+                            rand_arg = randomness.next_int(0, len(statement1.args))
+                            arg1 = list(statement1.args.values())[rand_arg]
+                            
+                            if str(arg1._type) == str(arg2._type):
+                                with open(r"I:\Studium\HU\SE2\output\new_output\log.txt", "a") as file:
+                                    file.write(f"hit\n")
+                                changed = True
+                        
+                        if not changed:
+                            
+                            for arg in statement1.args.values():            # This is not random
+                                if str(arg) == str(arg2):
+                                    arg1 = arg
+                                    break
+                                
+                        if arg1 in attributes1 and arg2 in attributes2:
+                            
+                            val1, val2 = attributes1[arg1].value, attributes2[arg2].value
                             
                             
                             if isinstance(val1, (str, bytes)) and isinstance(val2, (str, bytes)):
@@ -271,12 +287,9 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                             else:
                                 val1 = SBX(val1, val2)
                                 val2 = SBX(val2, val1)
-
-                            with open(r'I:\Studium\HU\SE2\output\new_output\kek.txt', 'a') as f:
-                                f.write(f"val1: {val1}, val2: {val2}\n")
                             
-                            list(attributes1[arg1])[rand1].value = val1
-                            list(attributes2[arg2])[rand2].value = val2
+                            attributes1[arg1].value = val1
+                            attributes2[arg2].value = val2
                     
         
 

@@ -29,9 +29,10 @@ fi
 SECONDS=0
 DOCKER_EXE=podman
 MAX_PARALLEL=$(($(nproc --all) - 1))
+PID=$$
 GID=$(ps -o '%r' $$ | sed "s/[^0-9\n]//g")
 
-WORKDIR=./runs/$RUN_NAME/$IMAGE_NAME/$SEARCH_TIME/
+WORKDIR=./runs/$RUN_NAME/$IMAGE_NAME/$SEARCH_TIME
 
 DONE_PATH=$WORKDIR/done.txt
 ERROR_PATH=$WORKDIR/errors.txt
@@ -74,7 +75,7 @@ progress() {
         $rate \
         $done \
         $error \
-        $(get_child_count) \
+        $(get_process_count) \
         $(get_container_count) \
         $eta
 
@@ -89,8 +90,8 @@ get_container_count() {
     podman ps --noheading | wc -l
 }
 
-get_child_count() {
-    pgrep -c -P$$
+get_process_count() {
+    pgrep -c -g $GID
 }
 
 container_name() {
@@ -139,11 +140,8 @@ run_module() {
 
 run() {
     while IFS= read -r module; do
-        progress
-
         while (("$(get_container_count)" >= "$MAX_PARALLEL")); do
             sleep 1
-            progress
         done
 
         if grep -q $module $EXCLUDE_PATH; then

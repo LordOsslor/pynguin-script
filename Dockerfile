@@ -9,7 +9,7 @@ WORKDIR /work/
 
 # Copy necessary scripts
 COPY ./scripts/* .
-COPY ./projects.txt .
+COPY ./config/projects.txt .
 
 # Run setup
 RUN chmod +x setup.sh

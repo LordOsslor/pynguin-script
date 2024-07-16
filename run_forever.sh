@@ -10,8 +10,6 @@ else
     fi
 fi
 
-echo $START >./config/last_run.txt
-
 if [[ $# -ge 2 ]]; then
     TIMES=$2
 else
@@ -21,6 +19,8 @@ fi
 IFS=',' read -ra TIMES_ARR <<<"$TIMES"
 
 for ((RUN_COUNT = $START; ; RUN_COUNT++)); do
+    echo $RUN_COUNT >./config/last_run.txt
+
     for IMAGE in {pynguin-hmx,pynguin-sx}; do
         for SEARCH_TIME in ${TIMES_ARR[@]}; do
             echo "[LOOP] Starting run: #$RUN_COUNT; I=$IMAGE; T=$SEARCH_TIME"

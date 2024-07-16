@@ -79,7 +79,7 @@ progress() {
         $(get_container_count) \
         $eta
 
-    if (($sum == $real_total)); then
+    if (($sum >= $real_total)); then
         true
     else
         false

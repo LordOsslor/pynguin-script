@@ -5,6 +5,6 @@ for arg in ${array[@]}; do
     src="${arg%:*}"
     dest="${arg#*:}"
 
-    echo "Copying /build_dir/$src to $dest"
-    cp /build_dir/$src $dest
+    echo "Copying ./inject/$src to $dest"
+    cp ./inject/$src $dest
 done

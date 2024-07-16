@@ -7,7 +7,7 @@ RUN apt-get install unzip
 RUN mkdir -p /work/
 WORKDIR /work/
 
-# Copy necessary scripts
+# Copy necessary stuff for setup
 COPY ./scripts/* .
 COPY ./config/projects.txt .
 
@@ -16,15 +16,13 @@ RUN chmod +x setup.sh
 
 RUN ./setup.sh
 
-# === Ensure fresh modulenames.txt and correct injection ===
-ARG CACHE_BUST=1
-RUN echo ${CACHE_BUST}
-
 # Inject files
+COPY ./inject/ ./inject/
+
 ARG INJECT=""
 RUN chmod +x inject.sh
 
-RUN --mount=type=bind,source=./inject/,target=/build_dir ./inject.sh ${INJECT}
+RUN ./inject.sh ${INJECT}
 
 # Fix debug spam
 ARG DEBUG_FIX="true"
@@ -35,6 +33,10 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
     's/^\(\s*\)\(..*\) = \(logging.getLogger(__name__)\)/\1\2 = \3\n\1\2.setLevel(logging.INFO)/'; \
     fi
 
+
+# === Ensure fresh modulenames.txt and correct injection ===
+ARG CACHE_BUST=1
+RUN echo ${CACHE_BUST}
 
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"

@@ -31,10 +31,16 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
     's/^\(\s*\)\(..*\) = \(logging.getLogger(__name__)\)/\1\2 = \3\n\1\2.setLevel(logging.INFO)/'; \
     fi
 
+# === Ensure fresh modulenames.txt ===
+ARG CACHE_BUST=1
+
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"
 RUN --mount=type=bind,source=./config/,target=/build_dir,rw=True python3.10 \
     iter_modules.py ./extracted/ ${SEARCH_DEPTH} > /build_dir/modulenames.txt 
+
+RUN echo ${CACHE_BUST}
+# ====================================
 
 # Acknowledge danger
 ENV PYNGUIN_DANGER_AWARE=True

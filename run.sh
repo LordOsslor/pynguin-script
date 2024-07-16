@@ -47,7 +47,7 @@ progress() {
     search_time=$1
     done=$(cat ./state/$search_time/done.txt | wc -l)
     error=$(cat ./state/$search_time/errors.txt | wc -l)
-    exclude=$(cat ./exclude.txt | wc -l)
+    exclude=$(cat ./exclude_modules.txt | wc -l)
 
     sum=$(($done + $error))
 
@@ -78,7 +78,7 @@ run() {
             sleep 1
         done
 
-        if grep -q $module ./exclude.txt; then
+        if grep -q $module ./exclude_modules.txt; then
             echo "Skipping module $module as it is excluded"
         elif grep -q $module ./state/$search_time/done.txt; then
             echo "Skipping module $module as it has already been marked as done"

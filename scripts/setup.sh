@@ -1,8 +1,8 @@
 #!/bin/bash
 python3.10 -m pip install pynguin
-python3.10 -m pip install -r requirements.txt
+python3.10 -m pip install -r projects.txt
 
-python3.10 -m pip download --no-deps -r ./requirements.txt -d ./downloaded/
+python3.10 -m pip download --no-deps -r ./projects.txt -d ./downloaded/
 
 mkdir -p ./extracted/
 

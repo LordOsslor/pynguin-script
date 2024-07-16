@@ -46,4 +46,4 @@ RUN chmod +x pynguin.sh
 RUN mkdir -p prison
 RUN mkdir -p output
 
-# ENTRYPOINT [ "./pynguin.sh" ]
+ENTRYPOINT [ "./pynguin.sh" ]

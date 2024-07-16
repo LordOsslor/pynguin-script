@@ -20,7 +20,7 @@ RUN ./setup.sh
 ARG INJECT=""
 RUN chmod +x inject.sh
 
-RUN --mount=type=bind,source=.,target=/build_dir ./inject.sh ${INJECT}
+RUN --mount=type=bind,source=./inject/,target=/build_dir ./inject.sh ${INJECT}
 
 # Fix debug spam
 ARG DEBUG_FIX="true"
@@ -33,8 +33,8 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
 
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"
-RUN --mount=type=bind,source=.,target=/build_dir,rw=True python3.10 \
-    iter_modules.py ./extracted/ ${SEARCH_DEPTH} > /build_dir/modulenames${SEARCH_DEPTH}.txt 
+RUN --mount=type=bind,source=./config/,target=/build_dir,rw=True python3.10 \
+    iter_modules.py ./extracted/ ${SEARCH_DEPTH} > /build_dir/modulenames.txt 
 
 # Acknowledge danger
 ENV PYNGUIN_DANGER_AWARE=True

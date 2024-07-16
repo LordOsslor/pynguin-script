@@ -105,8 +105,6 @@ post_run() {
   cat ./out/$search_time/*/statistics.csv | awk '!seen[$0]++' >out/$search_time/total_stats.csv
 }
 
-$DOCKER_EXE build -t pynguin .
-
 mkdir -p ./out/$search_time/
 mkdir -p ./state
 mkdir -p ./state/$search_time

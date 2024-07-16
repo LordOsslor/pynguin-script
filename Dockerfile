@@ -16,6 +16,10 @@ RUN chmod +x setup.sh
 
 RUN ./setup.sh
 
+# === Ensure fresh modulenames.txt and correct injection ===
+ARG CACHE_BUST=1
+RUN echo ${CACHE_BUST}
+
 # Inject files
 ARG INJECT=""
 RUN chmod +x inject.sh
@@ -31,8 +35,6 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
     's/^\(\s*\)\(..*\) = \(logging.getLogger(__name__)\)/\1\2 = \3\n\1\2.setLevel(logging.INFO)/'; \
     fi
 
-# === Ensure fresh modulenames.txt ===
-ARG CACHE_BUST=1
 
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"

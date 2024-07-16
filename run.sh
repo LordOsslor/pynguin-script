@@ -1,9 +1,15 @@
 #!/bin/bash
 
 if [[ $# -ge 1 ]]; then
-    search_time=$1
+    SEARCH_TIME=$1
 else
-    search_time=600
+    SEARCH_TIME=600
+fi
+
+if [[ $# -ge 2 ]]; then
+    CONTAINER_NAME=$2
+else
+    CONTAINER_NAME=pynguin
 fi
 
 SECONDS=0
@@ -12,18 +18,17 @@ let "MAX_PARALLEL=$(nproc --all)-1"
 
 run_module() {
     module=$1
-    search_time=$2
 
     echo "Running module $module"
     timeout -k 10 2000 \
         $DOCKER_EXE run \
-        --name $search_time.$module \
+        --name $SEARCH_TIME.$module \
         --replace \
         --cpus 1.0 \
-        --mount type=bind,source=./out/$search_time/$module/,target=/bind/ \
-        pynguin \
+        --mount type=bind,source=./out/$SEARCH_TIME/$module/,target=/bind/ \
+        $CONTAINER_NAME \
         $module \
-        $search_time
+        $SEARCH_TIME
 
     status=$?
 
@@ -31,22 +36,21 @@ run_module() {
 
     if [ $status -eq 0 ]; then
         echo "Module $module successfully completed; Marking as done"
-        echo $module >>./state/$search_time/done.txt
+        echo $module >>./state/$SEARCH_TIME/done.txt
     elif [ $status -ge 124 ]; then
         echo "Module $module timed out; Killing container and marking as error"
-        $DOCKER_EXE kill $search_time.$module
-        echo $module >>./state/$search_time/errors.txt
+        $DOCKER_EXE kill $SEARCH_TIME.$module
+        echo $module >>./state/$SEARCH_TIME/errors.txt
     else
         echo "ERROR while running module $module: Exit code=$status; Marking as error"
-        echo $module >>./state/$search_time/errors.txt
+        echo $module >>./state/$SEARCH_TIME/errors.txt
     fi
 
 }
 
 progress() {
-    search_time=$1
-    done=$(cat ./state/$search_time/done.txt | wc -l)
-    error=$(cat ./state/$search_time/errors.txt | wc -l)
+    done=$(cat ./state/$SEARCH_TIME/done.txt | wc -l)
+    error=$(cat ./state/$SEARCH_TIME/errors.txt | wc -l)
     exclude=$(cat ./exclude_modules.txt | wc -l)
 
     sum=$(($done + $error))
@@ -61,7 +65,7 @@ progress() {
     rate=$(echo $sum.0001/$elapsed | bc -l)
     eta=$(TZ=UTC0 printf '%(%H:%M:%S)T' $(printf %.0f $(echo "($real_total-$sum)/$rate" | bc -l)))
 
-    echo "[$(TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed)] (T=$search_time): (done: $done + error: $error) => $sum / $real_total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
+    echo "[$(TZ=UTC0 printf '%(%H:%M:%S)T' $elapsed)] (T=$SEARCH_TIME): (done: $done + error: $error) => $sum / $real_total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
 }
 
 get_containers() {
@@ -74,22 +78,22 @@ run() {
             echo "Current container count:  $(get_containers); Our containers: $(pgrep -c -P$$); Waiting for threads to finish"
         fi
         while (("$(get_containers)" >= "$MAX_PARALLEL")); do
-            progress $search_time
+            progress
             sleep 1
         done
 
         if grep -q $module ./exclude_modules.txt; then
             echo "Skipping module $module as it is excluded"
-        elif grep -q $module ./state/$search_time/done.txt; then
+        elif grep -q $module ./state/$SEARCH_TIME/done.txt; then
             echo "Skipping module $module as it has already been marked as done"
-        elif grep -q $module ./state/$search_time/errors.txt; then
+        elif grep -q $module ./state/$SEARCH_TIME/errors.txt; then
             echo "Skipping module $module as it has already benn marked as erroneous"
         else
 
             echo "Starting execution of module $module..."
 
-            mkdir -p out/$search_time/$module/
-            run_module $module $search_time &>out/$search_time/$module/log.txt &
+            mkdir -p out/$SEARCH_TIME/$module/
+            run_module $module &>out/$SEARCH_TIME/$module/log.txt &
 
         fi
     done <"./modulenames.txt"
@@ -97,19 +101,19 @@ run() {
 
 post_run() {
     while (("$(pgrep -c -g $1)" > 1)); do
-        progress $search_time
+        progress
         sleep 1
     done
 
-    progress $search_time
-    cat ./out/$search_time/*/statistics.csv | awk '!seen[$0]++' >out/$search_time/total_stats.csv
+    progress $SEARCH_TIME
+    cat ./out/$SEARCH_TIME/*/statistics.csv | awk '!seen[$0]++' >out/$SEARCH_TIME/total_stats.csv
 }
 
-mkdir -p ./out/$search_time/
+mkdir -p ./out/$SEARCH_TIME/
 mkdir -p ./state
-mkdir -p ./state/$search_time
-touch ./state/$search_time/done.txt
-touch ./state/$search_time/errors.txt
+mkdir -p ./state/$SEARCH_TIME
+touch ./state/$SEARCH_TIME/done.txt
+touch ./state/$SEARCH_TIME/errors.txt
 
 run
 

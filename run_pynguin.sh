@@ -8,9 +8,9 @@ else
 fi
 
 if [[ $# -ge 2 ]]; then
-    CONTAINER_NAME=$2
+    IMAGE_NAME=$2
 else
-    CONTAINER_NAME=pynguin
+    IMAGE_NAME=pynguin
 fi
 
 if [[ $# -ge 3 ]]; then
@@ -31,7 +31,7 @@ DOCKER_EXE=podman
 MAX_PARALLEL=$(($(nproc --all) - 1))
 GID=$(ps -o '%r' $$ | sed "s/[^0-9\n]//g")
 
-WORKDIR=./runs/$RUN_NAME/$CONTAINER_NAME/$SEARCH_TIME/
+WORKDIR=./runs/$RUN_NAME/$IMAGE_NAME/$SEARCH_TIME/
 
 DONE_PATH=$WORKDIR/done.txt
 ERROR_PATH=$WORKDIR/errors.txt
@@ -95,7 +95,7 @@ run_module() {
         --replace \
         --cpus 1.0 \
         --mount type=bind,source=$WORKDIR/$module/,target=/bind/ \
-        $CONTAINER_NAME \
+        $IMAGE_NAME \
         $module \
         $SEARCH_TIME
 

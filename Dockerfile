@@ -7,16 +7,16 @@ RUN apt-get install unzip
 RUN mkdir -p /work/
 WORKDIR /work/
 
+# Copy necessary scripts
+COPY ./scripts/* .
+
 # Run setup
-COPY requirements.txt ./
-COPY setup.sh ./
 RUN chmod +x setup.sh
 
 RUN ./setup.sh
 
 # Inject files
 ARG INJECT=""
-COPY inject.sh ./
 RUN chmod +x inject.sh
 
 RUN --mount=type=bind,source=.,target=/build_dir ./inject.sh ${INJECT}
@@ -32,7 +32,6 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
 
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"
-COPY iter_modules.py ./
 RUN --mount=type=bind,source=.,target=/build_dir,rw=True python3.10 \
     iter_modules.py ./extracted/ ${SEARCH_DEPTH} > /build_dir/modulenames${SEARCH_DEPTH}.txt 
 
@@ -40,7 +39,6 @@ RUN --mount=type=bind,source=.,target=/build_dir,rw=True python3.10 \
 ENV PYNGUIN_DANGER_AWARE=True
 
 # Copy entry script
-COPY pynguin.sh ./
 RUN chmod +x pynguin.sh
 
 # Create directories used at run time

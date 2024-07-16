@@ -36,6 +36,7 @@ WORKDIR=./runs/$RUN_NAME/$IMAGE_NAME/$SEARCH_TIME/
 DONE_PATH=$WORKDIR/done.txt
 ERROR_PATH=$WORKDIR/errors.txt
 AGG_PATH=$WORKDIR/aggregated.csv
+LOG_PATH=$WORKDIR/log.txt
 
 EXCLUDE_PATH=$CONF_PATH/exclude_modules.txt
 MODULES_PATH=$CONF_PATH/modulenames.txt
@@ -126,12 +127,12 @@ run_module() {
         echo "$(prefix) Module $module successfully completed; Marking as done"
         echo $module >>$DONE_PATH
     elif [ $status -ge 124 ]; then
-        echo "$(prefix) Module $module timed out; Killing container and marking as error"
+        echo "$(prefix) Module $module timed out ($status); Killing container and marking as error"
         $DOCKER_EXE kill $(container_name $module)
-        echo $module >>$ERROR_PATH
+        echo "$module (Timeout!)" >>$ERROR_PATH
     else
         echo "$(prefix) ERROR while running module $module: Exit code=$status; Marking as error"
-        echo "$module (Timeout)" >>$ERROR_PATH
+        echo "$module ($status)" >>$ERROR_PATH
     fi
 
 }
@@ -156,7 +157,6 @@ run() {
 
             mkdir -p $WORKDIR/$module/
             run_module $module &>$WORKDIR/$module/log.txt &
-
         fi
     done <$MODULES_PATH
 }
@@ -173,9 +173,9 @@ post_run() {
 # MAIN:
 
 init
-run | tee -ap $WORKDIR/log.txt
+run | tee -ap $LOG_PATH
 
 # Allow program to exit and signal that it's done but it can still do some cleanup after everything:
-post_run | tee -ap $WORKDIR/log.txt &
+post_run | tee -ap $LOG_PATH &
 
 echo "$(prefix) All containers launched"

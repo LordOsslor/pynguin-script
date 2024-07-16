@@ -6,10 +6,9 @@ python3.10 -m pip download --no-deps -r ./projects.txt -d ./downloaded/
 
 mkdir -p ./extracted/
 
-for f in ./downloaded/*.whl; do
-    unzip $f -x "*[0-9].[0-9]*" -x "*test*" -x "*example*" -fo -d ./extracted/
+for f in $(compgen -G "./downloaded/*.whl"); do
+    unzip $f -x "*[0-9].[0-9]*" -x "*test*" -x "*example*" -fo -d ./extracted/ || true
 done
-
-for f in ./downloaded/*.tar.gz; do
+for f in $(compgen -G "./downloaded/*.tar.gz"); do
     tar -xzf $f -C ./extracted/ --wildcards "*/*/*" --exclude "*/*.egg-info/*" --strip-components=1
 done

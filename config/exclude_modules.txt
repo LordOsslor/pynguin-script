@@ -1,1 +1,2 @@
 flutes.io
+httpie.core

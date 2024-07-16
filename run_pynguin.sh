@@ -59,10 +59,16 @@ progress() {
     perc=$(printf %.2f $rel)
 
     elapsed=$SECONDS
-    rate=$(echo $sum.0001/$elapsed | bc -l)
+    rate=$(echo \($sum+0.00001\)/\($elapsed +0.00001\) | bc -l)
     eta=$(to_time_str $(echo "($real_total-$sum)/$rate" | bc -l))
 
-    echo "[$(to_time_str $elapsed)] (T=$SEARCH_TIME): (done: $done + error: $error) => $sum / $real_total ($perc%; $(printf %.2f $rate) mod/s); ETA: $eta"
+    echo "[$(to_time_str $elapsed)] [N=$RUN_NAME; I=$IMAGE_NAME; T=$SEARCH_TIME]: ($done+$error=$sum) / ($total-$exclude=$real_total) ($perc%; $(printf %.2f $rate) mod/s); ($(get_child_count) / $(get_container_count)) ETA: $eta"
+
+    if (($sum == $real_total)); then
+        true
+    else
+        false
+    fi
 }
 
 get_container_count() {
@@ -143,23 +149,20 @@ run() {
 }
 
 post_run() {
-    while (("$(pgrep -c -g $GID)" > 1)); do
-        progress
+    while ! progress; do
         sleep 1
     done
 
-    progress $SEARCH_TIME
-
     # Combine stats
-    cat $WORKDIR/*/statistics.csv | awk '!seen[$0]++' >$AGG_PATH
+    cat $WORKDIR/*/statistics.csv | awk '!seen[$0] {print} {++seen[$0]}' >$AGG_PATH
 }
 
 # MAIN:
 
 init
-run
+run | tee -ap $WORKDIR/log.txt
 
 # Allow program to exit and signal that it's done but it can still do some cleanup after everything:
-post_run &
+post_run | tee -ap $WORKDIR/log.txt &
 
-echo "All modules have been started; exiting main script"
+echo "run_pynguin.sh exiting..."

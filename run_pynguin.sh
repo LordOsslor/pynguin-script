@@ -171,9 +171,10 @@ post_run() {
 # MAIN:
 
 init
-run | tee -ap $LOG_PATH
 
 # Allow program to exit and signal that it's done but it can still do some cleanup after everything:
 post_run | tee -ap $LOG_PATH &
+
+run | tee -ap $LOG_PATH
 
 echo "$(prefix) All containers launched"

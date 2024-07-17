@@ -8,7 +8,7 @@ RUN mkdir -p /work/
 WORKDIR /work/
 
 # Copy necessary stuff for setup
-COPY ./scripts/* .
+COPY ./scripts/setup.sh .
 COPY ./config/projects.txt .
 
 # Run setup
@@ -18,6 +18,7 @@ RUN ./setup.sh
 
 # Inject files
 COPY ./inject/ ./inject/
+COPY ./scripts/inject.sh .
 
 ARG INJECT=""
 RUN chmod +x inject.sh
@@ -34,10 +35,10 @@ RUN if [ "${DEBUG_FIX}" = "true"  ]; then \
     fi
 
 
+COPY ./scripts/iter_modules.py .
 # === Ensure fresh modulenames.txt and correct injection ===
 ARG CACHE_BUST=1
 RUN echo ${CACHE_BUST}
-
 # Generate modulenames.txt in build dir
 ARG SEARCH_DEPTH="1"
 RUN --mount=type=bind,source=./config/,target=/build_dir,rw=True python3.10 \
@@ -50,6 +51,7 @@ RUN echo ${CACHE_BUST}
 ENV PYNGUIN_DANGER_AWARE=True
 
 # Copy entry script
+COPY ./scripts/pynguin.sh .
 RUN chmod +x pynguin.sh
 
 # Create directories used at run time

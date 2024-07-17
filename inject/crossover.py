@@ -281,13 +281,13 @@ class SinglePointRelativeCrossOver(CrossOverFunction[T]):
                             
                             
                             if isinstance(val1, (str, bytes)) and isinstance(val2, (str, bytes)):
-                                val1, val2 = StringCrossover(val1, val2)
+                                new_val1, new_val2 = StringCrossover(val1, val2)
                             else:
-                                val1 = SBX(val1, val2)
-                                val2 = SBX(val2, val1)
+                                new_val1 = SBX(val1, val2)
+                                new_val2 = SBX(val2, val1)
                             
-                            attributes1[arg1].value = val1
-                            attributes2[arg2].value = val2
+                            attributes1[arg1].value = new_val1
+                            attributes2[arg2].value = new_val2
                     
         
 

@@ -27,6 +27,7 @@ fi
 
 # GLOBALS:
 SECONDS=0
+BUDGET=0
 DOCKER_EXE=podman
 MAX_PARALLEL=$(($(nproc --all) - 1))
 PID=$$
@@ -87,7 +88,11 @@ progress() {
 }
 
 get_container_count() {
-    podman ps --noheading | wc -l
+    $DOCKER_EXE ps --noheading | wc -l
+}
+
+get_budget() {
+    echo $(($MAX_PARALLEL - $(get_container_count)))
 }
 
 get_process_count() {
@@ -139,9 +144,12 @@ run_module() {
 }
 
 run() {
+    sleep 1
+    BUDGET=$(get_budget)
     while IFS= read -r module; do
-        while (("$(get_container_count)" >= "$MAX_PARALLEL")); do
-            sleep 1
+        while (($BUDGET <= 0)); do
+            sleep 5
+            BUDGET=$(get_budget)
         done
 
         if grep -q $module $EXCLUDE_PATH; then
@@ -151,17 +159,19 @@ run() {
         elif grep -q $module $ERROR_PATH; then
             echo "$(prefix) Skipping module $module as it has already benn marked as erroneous"
         else
-            echo "$(prefix) Starting execution of module $module..."
+            echo "$(prefix) Starting execution of module $module"
 
             mkdir -p $WORKDIR/$module/
             run_module $module &>$WORKDIR/$module/log.txt &
         fi
+
+        BUDGET=$((BUDGET - 1))
     done <$MODULES_PATH
 }
 
 post_run() {
     while ! progress; do
-        sleep 1
+        sleep 10
     done
 
     # Combine stats

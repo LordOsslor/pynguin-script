@@ -1,2 +1,0 @@
-flutes.io
-httpie.core

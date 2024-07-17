@@ -96,7 +96,7 @@ get_process_count() {
 
 container_name() {
     module=$1
-    echo $SEARCH_TIME.$module
+    echo $RUN_NAME.$IMAGE_NAME.$SEARCH_TIME.$module
 }
 
 init() {

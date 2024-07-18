@@ -101,7 +101,7 @@ get_process_count() {
 
 container_name() {
     module=$1
-    echo $RUN_NAME.$IMAGE_NAME.$SEARCH_TIME.$module
+    echo $IMAGE_NAME.$SEARCH_TIME.$module
 }
 
 init() {
@@ -120,6 +120,7 @@ run_module() {
         --name $(container_name $module) \
         --replace \
         --cpus 1.0 \
+        --image-volume=tmpfs \
         --mount type=bind,source=$WORKDIR/$module/,target=/bind/ \
         $IMAGE_NAME \
         $module \
